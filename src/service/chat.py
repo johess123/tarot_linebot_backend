@@ -3,7 +3,7 @@ from src.models import chat as chat_model
 from linebot import LineBotApi, WebhookParser
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
-
+import uuid
 
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 parser = WebhookParser(os.getenv("LINE_CHANNEL_SECRET"))
@@ -12,6 +12,7 @@ async def handle_user_message(body: bytes, x_line_signature: str):
     events = parser.parse(body.decode("utf-8"), x_line_signature)
     for event in events:
         if isinstance(event, MessageEvent) and isinstance(event.message, TextMessage):
+            session_id = str(uuid.uuid4())
             query = event.message.text
             # 使用 GPT 重寫使用者問題
             rewrite_prompt = [
@@ -67,7 +68,9 @@ async def handle_user_message(body: bytes, x_line_signature: str):
                     "content": prompt
                 }
             ]
+            print(f"對話{session_id}, 傳送問題: ", messages)
             # call gpt
             reply = await call_llm.call_gpt(messages)
+            print(f"對話{session_id}, 傳送回覆: ", reply)
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
     return {"status": "ok"}
