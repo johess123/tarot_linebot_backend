@@ -12,7 +12,8 @@ class LoginData(BaseModel):
 
 @router.post("/api/admin/login")
 async def login_api(data: LoginData):
-    if data.userId in ADMIN_IDS:
+    admin_ids = ADMIN_IDS.split(",") if ADMIN_IDS else []
+    if data.userId in admin_ids:
         return {"isAdmin": True}
     else:
         return {"isAdmin": False}
