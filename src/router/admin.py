@@ -1,6 +1,9 @@
 from fastapi import APIRouter
 from src.service import admin as admin_service
 from pydantic import BaseModel
+import os
+
+ADMIN_IDS = os.getenv("ADMIN_IDS")
 
 router = APIRouter()
 
@@ -9,15 +12,14 @@ class LoginData(BaseModel):
 
 @router.post("/api/admin/login")
 async def login_api(data: LoginData):
-    print(data.userId)
-    # return await admin_service.login(data.userId)
-    return {"isAdmin": True}
-
+    if data.userId in ADMIN_IDS:
+        return {"isAdmin": True}
+    else:
+        return {"isAdmin": False}
 
 class QesAnsData(BaseModel):
     qes: str
     ans: str
-
 
 @router.post("/api/admin/qes_ans")
 async def add_qes_ans_api(data: QesAnsData):
