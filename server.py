@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 from src.router import chat as chat_router, admin as admin_router
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import os
 
@@ -24,4 +23,3 @@ app.add_middleware(
 
 app.include_router(chat_router.router) # 一般 user
 app.include_router(admin_router.router) # admin
-app.mount("/static", StaticFiles(directory="static"), name="static")
