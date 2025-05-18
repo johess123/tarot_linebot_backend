@@ -1,14 +1,19 @@
-from src.ToolsApi import call_llm, rag_tool, call_embedding
+from src.ToolsApi import call_llm, rag_tool
 from src.models import chat as chat_model
 from linebot import LineBotApi, WebhookParser
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
 import uuid
+from dotenv import load_dotenv
+
+# 只在本地開發時載入 .env（避免在 Render 重複讀取）
+if os.getenv("RENDER") is None:  # Render 上會內建設定 RENDER=True
+    load_dotenv()
 
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 parser = WebhookParser(os.getenv("LINE_CHANNEL_SECRET"))
 
-async def handle_user_message(body: bytes, x_line_signature: str):
+async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user 訊息
     events = parser.parse(body.decode("utf-8"), x_line_signature)
     for event in events:
         if isinstance(event, MessageEvent) and isinstance(event.message, TextMessage):
@@ -41,7 +46,6 @@ async def handle_user_message(body: bytes, x_line_signature: str):
                 related_data = await rag_tool.search_with_rag(rewritten_query)
                 count = 1
                 for i in related_data:
-                    print(f"相關資料{count}", "問題:", i["question"], "答案:", i["answer"])
                     count += 1
                 # 2. 組 prompt
             #    a. 例行 prompt (語調, query)
@@ -51,7 +55,6 @@ async def handle_user_message(body: bytes, x_line_signature: str):
     1. 知識庫檢索的資料是多組問答對，你只能根據知識庫的內容回答。
     2. 如果使用者問題與任何一組以上問答內容相關，就根據這些資料內容回答。
     3. 如果使用者的問題與知識庫所有問答都不相關，才回答：「很抱歉，我只能回答跟服務相關的問題」。
-    4. 回答最後加一句簡短說明：你為什麼能這樣回答（例如：「因為有檢索到關於營業時間的資料」）。
 # Input:
     ## 使用者問題: {rewritten_query}
     ## 知識庫檢索資料: """

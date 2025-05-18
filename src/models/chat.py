@@ -1,15 +1,6 @@
 from src.models.db import get_db
 
-async def get_tone():
-    # 從 tone collection 抓第一筆 tone 欄位
-    db = await get_db()
-    row = await db["tone"].find_one({}, {"content": 1, "_id": 0})
-    if row:
-        return row["content"]
-    return None
-
-
-async def query_service_by_vector(embedding):
+async def query_service_by_vector(embedding): # 取向量相似度最高三個 Q、最高三個 A，再交叉搜尋
     db = await get_db()
     min_score = 0.6
     # 篩出最相近的前 3 筆問題

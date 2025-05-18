@@ -2,9 +2,13 @@ from fastapi import FastAPI
 from src.router import chat as chat_router, admin as admin_router
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from dotenv import load_dotenv
+
+# 只在本地開發時載入 .env（避免在 Render 重複讀取）
+if os.getenv("RENDER") is None:  # Render 上會內建設定 RENDER=True
+    load_dotenv()
 
 app = FastAPI()
-
 
 frontend_url = os.getenv("FRONTEND_URL")
 # 允許的來源
