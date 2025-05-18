@@ -1,6 +1,7 @@
 from src.models import admin as admin_model
 from src.ToolsApi import call_llm, call_embedding
 from src.config.tone import tone
+from datetime import date
 
 async def add_qes_ans(qes: str, ans: str): # 新增 Q&A
     qes_embedding = call_embedding.get_embedding(qes)
@@ -22,6 +23,7 @@ async def delete_qes_ans(serial_number: int): # 刪除 Q&A
 async def generate_announcement(content: str, choose_tone: str): # 生成公告
     text_min_length = round(len(content)*0.8)
     text_max_length = round(len(content)*1.2)
+    today = date.today()
     messages = [
         {
             "role": "system",
@@ -29,7 +31,7 @@ async def generate_announcement(content: str, choose_tone: str): # 生成公告
         },
         {
             "role": "user",
-            "content": tone[choose_tone]["constraint"].format(text_min_length=text_min_length, text_max_length=text_max_length) + "\n" + tone[choose_tone]["input"].format(input=content)
+            "content": tone[choose_tone]["constraint"].format(text_min_length=text_min_length, text_max_length=text_max_length, today=today) + tone[choose_tone]["input"].format(input=content)
         }
     ]
     print("messages:", messages)
