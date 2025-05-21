@@ -23,7 +23,10 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
             rewrite_prompt = [
                 {
                     "role": "user",
-                    "content": f"請重寫以下問題以使其更清晰：{query}"
+                    "content": f"""#Instruction:
+將使用者向客服商家提出的問題改寫成更清楚的問句，但保留原本的提問語氣與角色（由使用者發問，向商家詢問）。
+不要改變原意，也不要加入新的資訊。
+# Input: {query}"""
                 }
             ]
             rewritten_query = await call_llm.call_gpt(rewrite_prompt)
