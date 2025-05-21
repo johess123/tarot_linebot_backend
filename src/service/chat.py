@@ -30,6 +30,7 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
                 }
             ]
             rewritten_query = await call_llm.call_gpt(rewrite_prompt)
+            print(f"對話{session_id}, 原問題: {query}, 重寫問題: ", rewritten_query)
 
             # function call 判斷是否需要 rag
             # prompt = [
