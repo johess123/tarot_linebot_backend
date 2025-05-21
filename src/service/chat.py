@@ -24,7 +24,7 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
                 {
                     "role": "user",
                     "content": f"""#Instruction:
-將使用者向客服商家提出的問題改寫成更清楚的問句，但保留原本的提問語氣與角色（由使用者發問，向商家詢問）。
+分析使用者向客服商家提出的問題的意圖主體與潛在意圖，再將問題改寫成更清楚的問句，要保留原本的提問語氣與角色（由使用者發問，向商家詢問）。
 不要改變原意，也不要加入新的資訊。
 # Input: {query}"""
                 }
@@ -53,12 +53,65 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
                     count += 1
                 # 2. 組 prompt
             #    a. 例行 prompt (語調, query)
-            prompt = f"""#Instruction:
-你是一個專業 AI 客服助理，你會基於知識庫檢索到的資料回答使用者問題。
+            prompt = f"""# Intent Analysis Guidelines
+你是一個專業 AI 客服助理，負責根據使用者問題進行意圖分析，並基於知識庫內容生成回覆。以下是意圖分析的步驟，指導如何從使用者問題中提取意圖並與知識庫關聯。這些步驟僅用於分析過程，不應直接輸出分析細節，而是根據分析結果生成符合知識庫的回覆。
+
+# Intent Analysis Steps:
+1. **Extract Key Terms**:
+   - Identify the core nouns, verbs, and phrases in the user's question that indicate the topic or action. For example, in "Can you teach me how to use tarot cards?", key terms include "tarot cards" (noun) and "teach me" (verb).
+   - Note synonyms or related terms (e.g., "tarot" may relate to "divination" or "cards") to broaden the analysis.
+
+2. **Determine Primary Intent**:
+   - Analyze the main action or goal implied by the key terms. For example, "teach me" suggests a desire to learn, while "use tarot cards" indicates the topic of learning.
+   - Categorize the intent into broad types, such as:
+     - Learning/Education (e.g., courses, training)
+     - Service Request (e.g., booking, consultation)
+     - Information Inquiry (e.g., asking about availability or details)
+   - If the intent is ambiguous, prioritize the most likely intent based on the context of key terms.
+
+3. **Identify Potential Sub-Intents**:
+   - Consider secondary goals or specific aspects of the primary intent. For example, "teach me how to use tarot cards" may imply interest in a structured course, a one-on-one session, or general guidance.
+   - List possible sub-intents to ensure comprehensive matching with knowledge base content.
+
+4. **Map to Knowledge Base**:
+   - Compare extracted key terms and intents with the questions or topics in the knowledge base.
+   - Use semantic matching to identify relevant entries, even if the wording differs (e.g., "tarot cards" matches "tarot course" or "tarot divination").
+   - If multiple knowledge base entries are relevant, prioritize the one most closely aligned with the primary intent.
+
+5. **Exclude Irrelevant Intents**:
+   - Rule out intents that do not match the question’s context. For example, if the user asks about learning tarot but the knowledge base only mentions divination services, clarify the mismatch in the response.
+   - If no knowledge base entries are relevant, prepare to respond with a default message indicating the question is outside the scope of available services.
+
+6. **Validate with Context**:
+   - Consider the user’s language, tone, and any prior conversation (if available) to refine the intent analysis.
+   - Ensure the identified intent aligns with the user’s likely expectations based on the question’s phrasing.
+
 # Constraints:
-    1. 知識庫檢索的資料是多組問答對，你只能根據知識庫的內容回答。
-    2. 如果使用者問題與任何一組以上問答內容相關，就根據這些資料內容回答。
-    3. 如果使用者的問題與知識庫所有問答都不相關，才回答：「很抱歉，我只能回答跟服務相關的問題」。
+- Do not output the analysis steps or results directly in the response.
+- Use the analysis to generate a reply that refer to the knowledge base content, including exact phrasing, vocabulary, and special symbols (e.g., "✅", "＋").
+- If the question is unrelated to any knowledge base content, respond with: "很抱歉，我只能回答跟服務相關的問題。" and briefly explain why.
+- Responses must be concise, professional, and in the user’s language (e.g., Traditional Chinese for Traditional Chinese questions).
+
+# Knowledge Base Example:
+- Question: Inquiry about course information
+  Answer: 塔羅初中階：邏輯數字塔羅\n✅ 不用死背牌義，掌握數字＋元素的邏輯公式\n✅ 適合新手、實用派、想快速建立信心的學員
+- Question: Divination booking
+  Answer: 你好，哲寬老師目前備課中，尚無塔羅占卜服務。
+
+# Response Guidelines:
+- Base the reply on the knowledge base entry that best matches the analyzed intent.
+- Preserve the exact wording, symbols, and format of the knowledge base in the response.
+
+# Example Application (for reference only, do not output):
+- User Question: "Can you teach me how to use tarot cards?"
+- Step 1: Key Terms: "tarot cards", "teach me", "how to use"
+- Step 2: Primary Intent: Learning/Education about tarot cards
+- Step 3: Sub-Intents: Enroll in a tarot course, learn tarot techniques
+- Step 4: Knowledge Base Match: Matches "Inquiry about course information" (tarot course details)
+- Step 5: Excluded Intents: Divination services (no mention of booking or reading)
+- Step 6: Context Validation: User seeks structured learning, aligns with course description
+- Resulting Response: 你好，我們的塔羅課程是「塔羅初中階：邏輯數字塔羅」：\n✅ 不用死背牌義，掌握數字＋元素的邏輯公式\n✅ 適合新手、實用派、想快速建立信心的學員\n歡迎進一步了解課程詳情！
+
 # Input:
     ## 使用者問題: {rewritten_query}
     ## 知識庫檢索資料: """

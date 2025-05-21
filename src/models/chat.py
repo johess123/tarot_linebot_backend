@@ -11,7 +11,10 @@ async def query_service_by_vector(embedding): # 取向量相似度最高三個 Q
                 "queryVector": embedding,
                 "path": "embedding_vector",  # 你的欄位名
                 "numCandidates": 100,  # 先粗篩 100 筆
-                "limit": 3  # 最後只回傳最接近的 3 筆
+                "limit": 3,  # 最後只回傳最接近的 3 筆
+                "filter": {
+                    "is_deleted": False # 只撈未刪除的問題
+                }
             }
         },
         {
@@ -35,7 +38,10 @@ async def query_service_by_vector(embedding): # 取向量相似度最高三個 Q
                 "queryVector": embedding,
                 "path": "embedding_vector",  # 你的欄位名
                 "numCandidates": 100,  # 先粗篩 100 筆
-                "limit": 3  # 最後只回傳最接近的 3 筆
+                "limit": 3,  # 最後只回傳最接近的 3 筆
+                "filter": {
+                    "is_deleted": False # 只撈未刪除的答案
+                }
             }
         },
         {

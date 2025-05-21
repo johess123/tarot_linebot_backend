@@ -15,7 +15,8 @@ llm_model = os.getenv("LLM_MODEL")
 async def call_gpt(prompt: dict) -> str: # gpt 生成回覆
     res = openai.chat.completions.create(
         model=llm_model,
-        messages=prompt
+        messages=prompt,
+        temperature=0.5
     )
     return res.choices[0].message.content
 
