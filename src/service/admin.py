@@ -1,6 +1,6 @@
 from src.models import admin as admin_model
 from src.ToolsApi import call_llm, call_embedding
-from src.config.tone import tone
+from src.config.prompt import tone
 from datetime import date
 
 async def add_qes_ans(qes: str, ans: str): # 新增 Q&A
