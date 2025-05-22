@@ -31,7 +31,7 @@ async def generate_announcement(content: str, choose_tone: str): # 生成公告
         },
         {
             "role": "user",
-            "content": tone[choose_tone]["constraint"].format(text_min_length=text_min_length, text_max_length=text_max_length, today=today) + tone[choose_tone]["input"].format(input=content)
+            "content": tone[choose_tone]["constraints"].format(text_min_length=text_min_length, text_max_length=text_max_length, today=today) + tone[choose_tone]["input"].format(input=content)
         }
     ]
     print("messages:", messages)
