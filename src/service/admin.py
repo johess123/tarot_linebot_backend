@@ -2,6 +2,7 @@ from src.models import admin as admin_model
 from src.ToolsApi import call_llm, call_embedding
 from src.config.prompt import tone
 from datetime import date
+from src.logger import logger
 
 async def add_qes_ans(qes: str, ans: str): # 新增 Q&A
     qes_embedding = call_embedding.get_embedding(qes)
@@ -34,6 +35,6 @@ async def generate_announcement(content: str, choose_tone: str): # 生成公告
             "content": tone[choose_tone]["constraints"].format(text_min_length=text_min_length, text_max_length=text_max_length, today=today) + tone[choose_tone]["input"].format(input=content)
         }
     ]
-    print("messages:", messages)
     result = await call_llm.call_gpt(messages)
+    logger.info(f"公告輸入: {messages}, 生成公告: {result}")
     return {"result": result}

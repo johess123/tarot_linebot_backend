@@ -5,6 +5,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import os
 import uuid
 from dotenv import load_dotenv
+from src.logger import logger
 
 # 只在本地開發時載入 .env（避免在 Render 重複讀取）
 if os.getenv("RENDER") is None:  # Render 上會內建設定 RENDER=True
@@ -27,7 +28,7 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
                 }
             ]
             rewritten_query = await call_llm.call_gpt(rewrite_messages)
-            print(f"對話{session_id}, 原問題: {query}, 重寫問題: ", rewritten_query)
+            logger.info(f"對話{session_id}, 原問題: {query}, 重寫問題: {rewritten_query}")
 
             # function call 判斷是否需要 rag
             # prompt = [
@@ -61,9 +62,8 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
                     chatbot_prompt["language"]
                 }
             ]
-            print(f"對話{session_id}, 傳送問題: ", chatbot_messages)
             # call gpt
             reply = await call_llm.call_gpt(chatbot_messages)
-            print(f"對話{session_id}, 傳送回覆: ", reply)
+            logger.info(f"對話{session_id}, 傳送問題: {chatbot_messages}, 傳送回覆: {reply}")
             line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
     return {"status": "ok"}

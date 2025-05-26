@@ -3,6 +3,7 @@ from src.service import admin as admin_service
 from pydantic import BaseModel
 import os
 from dotenv import load_dotenv
+from src.logger import logger
 
 # 只在本地開發時載入 .env（避免在 Render 重複讀取）
 if os.getenv("RENDER") is None:  # Render 上會內建設定 RENDER=True
@@ -18,7 +19,7 @@ class LoginData(BaseModel):
 @router.post("/api/admin/login") # 登入
 async def login_api(data: LoginData):
     admin_ids = ADMIN_IDS.split(",") if ADMIN_IDS else []
-    print("使用者 line id", data.userId)
+    logger.info(f"使用者登入 line id: {data.userId}")
     if data.userId in admin_ids:
         return {"isAdmin": True}
     else:
