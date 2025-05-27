@@ -34,3 +34,18 @@ console_handler.setFormatter(formatter)
 
 if not logger.hasHandlers():
     logger.addHandler(console_handler)
+
+# === 過濾 /health_check 的 access log ===
+class ExcludePathsFilter(logging.Filter):
+    def __init__(self, excluded_paths):
+        super().__init__()
+        self.excluded_paths = excluded_paths
+
+    def filter(self, record):
+        message = record.getMessage()
+        return not any(path in message for path in self.excluded_paths)
+
+# 加到 uvicorn 的 access logger
+excluded_paths = ["/health_check"]
+access_logger = logging.getLogger("uvicorn.access")
+access_logger.addFilter(ExcludePathsFilter(excluded_paths))
