@@ -6,6 +6,7 @@ import os
 import uuid
 from dotenv import load_dotenv
 from src.logger import logger
+import aiohttp
 
 # 只在本地開發時載入 .env（避免在 Render 重複讀取）
 if os.getenv("RENDER") is None:  # Render 上會內建設定 RENDER=True
@@ -18,6 +19,19 @@ async def handle_user_message(body: bytes, x_line_signature: str): # 接收 user
     events = parser.parse(body.decode("utf-8"), x_line_signature)
     for event in events:
         if isinstance(event, MessageEvent) and isinstance(event.message, TextMessage):
+            user_id = event.source.user_id
+            # 發送載入動畫請求
+            async with aiohttp.ClientSession() as session:
+                headers = {
+                    "Authorization": f"Bearer {os.getenv('LINE_CHANNEL_ACCESS_TOKEN')}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "chatId": user_id,
+                    "loadingSeconds": 60
+                }
+                await session.post("https://api.line.me/v2/bot/chat/loading/start", headers=headers, json=payload)
+            
             session_id = str(uuid.uuid4())
             query = event.message.text
             # 使用 GPT 重寫使用者問題
