@@ -1,0 +1,28 @@
+{
+    "size": {
+      "width": 2500,
+      "height": 843
+    },
+    "selected": true,
+    "name": "客服切換選單",
+    "chatBarText": "切換客服模式",
+    "areas": [
+      {
+        "bounds": { "x": 0, "y": 0, "width": 1250, "height": 843 },
+        "action": {
+          "type": "postback",
+          "data": "ai",
+          "displayText": "切換為【AI客服】"
+        }
+      },
+      {
+        "bounds": { "x": 1251, "y": 0, "width": 1249, "height": 843 },
+        "action": {
+          "type": "postback",
+          "data": "human",
+          "displayText": "切換為【真人客服】"
+        }
+      }
+    ]
+  }
+  

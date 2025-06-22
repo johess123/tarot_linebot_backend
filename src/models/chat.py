@@ -1,4 +1,5 @@
 from src.models.db import get_db
+from datetime import datetime
 
 async def query_service_by_vector(embedding): # 取向量相似度最高三個 Q、最高三個 A，再交叉搜尋
     db = await get_db()
@@ -105,3 +106,42 @@ async def query_service_by_vector(embedding): # 取向量相似度最高三個 Q
             })
 
     return result
+
+async def check_user_is_existed(user_id): # 確認 user 是否已經存在
+    db = await get_db()
+    existing_user = await db["user"].find_one({"user_id": user_id})
+    if existing_user: # user 已存在
+        return True
+    return False
+
+
+async def add_new_user(user_id, display_name, picture_url): # 新增 user
+    db = await get_db()
+    user_data = {
+        "user_id": user_id,
+        "display_name": display_name,
+        "picture_url": picture_url,
+        "now_chat_mode": "ai",
+        "last_chat_mode": "ai",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+        "change_by": "system",
+    }
+    await db["user"].insert_one(user_data)
+
+async def get_user_profile(user_id): # 取得使用者資料
+    db = await get_db()
+    user_profile = await db["user"].find_one({"user_id": user_id})
+    return user_profile
+
+async def switch_chat_mode(new_chat_mode, user_id, now_chat_mode, change_by): # 切換客服模式
+    db = await get_db()
+    user_update = {
+        "$set": {
+            "now_chat_mode": new_chat_mode,
+            "last_chat_mode": now_chat_mode,
+            "updated_at": datetime.utcnow(),
+            "change_by": change_by
+        }
+    }
+    await db["user"].update_one({"user_id": user_id}, user_update)

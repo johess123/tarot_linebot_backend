@@ -1,6 +1,5 @@
 from src.models.db import get_db
 from datetime import datetime
-from bson import ObjectId
 
 async def insert_qes_ans(qes: str, qes_embedding, ans: str, ans_embedding): # 新增 Q&A
     db = await get_db()
